@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.project_travel_mate.R;
@@ -21,12 +21,13 @@ public class CityHistoryAdapter extends ArrayAdapter<CityHistoryListItem> {
     private Context mContext;
     private List<CityHistoryListItem> mCityHistory;
     private LayoutInflater mInflater;
-    private boolean mIsClicked = false;
+    private ArrayList<Boolean> mItemClicked;
 
     public  CityHistoryAdapter(Context context, List<CityHistoryListItem> cityHistory) {
         super(context, R.layout.city_history_listitem);
         mContext = context;
         mCityHistory = cityHistory;
+        mItemClicked = new ArrayList<>(Collections.nCopies(cityHistory.size(), false));
     }
 
     @Override
@@ -40,6 +41,8 @@ public class CityHistoryAdapter extends ArrayAdapter<CityHistoryListItem> {
         ViewHolder holder;
         mInflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.city_history_listitem, parent, false);
             holder = new ViewHolder(convertView);
@@ -49,21 +52,38 @@ public class CityHistoryAdapter extends ArrayAdapter<CityHistoryListItem> {
         }
 
         holder.heading.setText(mCityHistory.get(position).getHeading());
+
         holder.text.setText(mCityHistory.get(position).getText());
+
+        if ( mItemClicked.get(position)) {
+            holder.text.handleExpansion(false);
+        } else {
+            holder.text.handleExpansion(true);
+        }
+
         //expand text when it is clicked and collapse
         //when clicked again
-        holder.text.setOnClickListener(v -> {
-            holder.text.handleExpansion(mIsClicked);
-            mIsClicked = !mIsClicked;
+        holder.text.setOnClickListener(view -> {
+
+            if ( mItemClicked.get(position)) {
+                holder.text.handleExpansion(true);
+            } else {
+                holder.text.handleExpansion(false);
+            }
+
+            mItemClicked.set(position, !(mItemClicked.get(position)));
+
         });
         return convertView;
     }
+
 
     class ViewHolder {
         @BindView(R.id.text)
         ExpandableTextView text;
         @BindView(R.id.heading)
         TextView heading;
+
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
